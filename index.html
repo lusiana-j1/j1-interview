@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>J1 Real Voice Interview</title>
+</head>
+
+<body style="font-family:Arial; padding:20px;">
+
+<h2>J1 Visa Voice Interview Simulation</h2>
+
+<p id="status">Press Start Interview</p>
+<p id="question" style="font-weight:bold;"></p>
+
+<button onclick="startInterview()">Start Interview</button>
+
+<script>
+
+var questions = [
+"What will you do if your training does not match the training plan?",
+"Do you plan to seek employment in the United States after your program?",
+"What is the start and end date of your program?",
+"What category of J-1 are you applying for?",
+"What ties do you have to Indonesia?",
+"Why should we approve your visa?"
+];
+
+var answers = [
+"I will contact my sponsor to make sure the training stays aligned with the approved training plan.",
+"No. After completing my J-1 program, I will return to Indonesia and continue my career in the food and beverage industry there.",
+"My program will start on March 23, 2026 and end on March 22, 2027.",
+"I am applying for the J-1 Trainee program in Food and Beverage Management.",
+"My family and long-term career are in Indonesia.",
+"My academic background and professional experience align with this training program and I meet all requirements."
+];
+
+var current = 0;
+var score = 0;
+
+function shuffle() {
+for (var i = questions.length - 1; i > 0; i--) {
+var j = Math.floor(Math.random() * (i + 1));
+
+var tempQ = questions[i];
+questions[i] = questions[j];
+questions[j] = tempQ;
+
+var tempA = answers[i];
+answers[i] = answers[j];
+answers[j] = tempA;
+}
+}
+
+function speak(text, callback) {
+var utterance = new SpeechSynthesisUtterance(text);
+utterance.lang = "en-US";
+utterance.rate = 0.95;
+utterance.onend = function() {
+if(callback) callback();
+};
+speechSynthesis.speak(utterance);
+}
+
+function listen() {
+
+if (!('webkitSpeechRecognition' in window)) {
+alert("Speech recognition not supported.");
+return;
+}
+
+var recognition = new webkitSpeechRecognition();
+recognition.lang = "en-US";
+recognition.interimResults = false;
+
+recognition.onresult = function(event) {
+
+var userAnswer = event.results[0][0].transcript;
+
+if(userAnswer.toLowerCase().trim() === answers[current].toLowerCase().trim()){
+score++;
+}
+
+current++;
+
+if(current < questions.length){
+askQuestion();
+} else {
+endInterview();
+}
+
+};
+
+recognition.start();
+}
+
+function askQuestion() {
+
+document.getElementById("question").innerHTML =
+"Question " + (current+1) + " of " + questions.length;
+
+speak(questions[current], function(){
+listen();
+});
+
+}
+
+function endInterview() {
+
+document.getElementById("question").innerHTML =
+"Interview Finished.";
+
+speak("The interview is complete. Your score is " + score + " out of " + questions.length);
+document.getElementById("status").innerHTML =
+"Final Score: " + score + " / " + questions.length;
+}
+
+function startInterview() {
+shuffle();
+current = 0;
+score = 0;
+document.getElementById("status").innerHTML = "Interview Started";
+askQuestion();
+}
+
+</script>
+
+</body>
+</html>
